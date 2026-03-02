@@ -1,0 +1,25 @@
+[workspace]
+authors = ["Sriram Krishna <sriramsk1999@gmail.com>"]
+channels = ["conda-forge"]
+name = "GeoRT"
+platforms = ["linux-64"]
+version = "0.1.0"
+
+[tasks]
+
+[dependencies]
+python = "3.8.*"
+
+[pypi-dependencies]
+GeoRT = { path = ".", editable = true }
+trimesh = ">=4.11.2, <5"
+open3d = ">=0.18.0, <0.19"
+sapien = ">=2.2.2, <3"
+zmq = ">=0.0.0, <0.0.1"
+torch = ">=2.4.1, <3"
+torchvision = ">=0.19.1, <0.20"
+torchaudio = ">=2.4.1, <3"
+numpy = ">=1.24.4, <2"
+scipy = ">=1.10.1, <2"
+gym = ">=0.26.2, <0.27"
+tqdm = ">=4.67.3, <5"
