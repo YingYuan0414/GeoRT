@@ -210,7 +210,7 @@ class GeoRTTrainer:
             This is the main trainer.
         '''
 
-        fk_model = self.get_robot_neural_fk_model()
+        fk_model = self.get_robot_neural_fk_model(True)
         ik_model = IKModel(keypoint_joints=self.get_keypoint_info()["joint"]).cuda()
         os.makedirs("./checkpoint", exist_ok=True)
 
@@ -263,6 +263,8 @@ class GeoRTTrainer:
 
         point_dataset_human = MultiPointDataset.from_points(human_points, n=20000)
         point_dataloader = DataLoader(point_dataset_human, batch_size=2048, shuffle=True)
+
+        print("start training")
 
         # Training / Optimization
         for epoch in range(n_epoch):

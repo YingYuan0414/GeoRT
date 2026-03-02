@@ -19,6 +19,32 @@ from tqdm import tqdm
 import os
 from pathlib import Path 
 import math
+import pytorch_kinematics.transforms as tf
+
+def transform3d_to_sapien_pose(T: tf.Transform3d):
+    # get matrix (4x4)
+    mat = T.get_matrix()[0]   # remove batch dim if present
+    
+    # position
+    p = mat[:3, 3].cpu().numpy()
+
+    # rotation matrix
+    R = mat[:3, :3]
+
+    # convert to quaternion (w, x, y, z)
+    quat_wxyz = tf.matrix_to_quaternion(R)
+
+    quat_wxyz = quat_wxyz.cpu().numpy()
+
+    # reorder to SAPIEN format (x, y, z, w)
+    quat_xyzw = [
+        quat_wxyz[1],
+        quat_wxyz[2],
+        quat_wxyz[3],
+        quat_wxyz[0],
+    ]
+
+    return sapien.Pose(p, quat_xyzw)
 
 class HandKinematicModel:
     def __init__(self, 
@@ -67,7 +93,13 @@ class HandKinematicModel:
             self.hand = loader.load(hand_urdf)
             self.hand.set_root_pose(sapien.Pose([0, 0, 0.35], [0.695, 0, -0.718, 0]))
 
+        print("Links:", len(self.hand.get_links()))
+        print("Joints:", len(self.hand.get_joints()))
         self.pmodel = self.hand.create_pinocchio_model()
+        import pytorch_kinematics as pk
+        with open(hand_urdf, "rb") as f:
+            urdf_bytes = f.read()
+        self.pk_chain = pk.build_chain_from_urdf(urdf_bytes).to(dtype=torch.float32)
 
         # Setup hand base link.
         self.base_link = get_entity_by_name(self.hand.get_links(), base_link)
@@ -132,14 +164,18 @@ class HandKinematicModel:
             Get keypoints from hand qpos. qpos is specified using the user order.
         '''
         qpos = self.convert_user_order_to_sim_order(qpos)
-        self.pmodel.compute_forward_kinematics(qpos)
-        base_pose = self.pmodel.get_link_pose(self.base_link_idx)
+        # self.pmodel.compute_forward_kinematics(full_qpos)
+        pk_res = self.pk_chain.forward_kinematics(qpos)
+        link_names = self.pk_chain.get_link_names()
+        # base_pose = self.pmodel.get_link_pose(self.base_link_idx)
+        base_pose = transform3d_to_sapien_pose(pk_res[link_names[self.base_link_idx]])
 
         result = {} 
         vec_result = []
 
         for m, (link_idx, i) in self.keypoint_links_id_dict.items():
-            pose = self.pmodel.get_link_pose(link_idx)
+            # pose = self.pmodel.get_link_pose(link_idx)
+            pose = transform3d_to_sapien_pose(pk_res[link_names[link_idx]])
             new_pose = sapien.Pose(p=pose.p + (pose.to_transformation_matrix()[:3, :3] @ self.keypoint_offsets[i].reshape(3, 1)).reshape(-1), q=pose.q)
 
             x = (base_pose.inv() * new_pose).p # convert to hand base frame.
