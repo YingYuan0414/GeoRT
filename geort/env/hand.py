@@ -178,8 +178,11 @@ class HandKinematicModel:
             This function is only used during visualization
         '''
         qpos = np.clip(qpos, self.joint_lower_limit + 1e-3, self.joint_upper_limit - 1e-3)
-        qpos = self.convert_user_order_to_sim_order(qpos)
-        self.qpos_target = qpos 
+        # BUG: convert_user_order_to_sim_order was called here, but self.all_joints
+        # is already in user order, so this swaps joint values when user order != sim order
+        # (e.g. LEAP hand where joints 0/1, 4/5, 8/9 differ in kinematic tree vs naming).
+        # qpos = self.convert_user_order_to_sim_order(qpos)
+        self.qpos_target = qpos
 
         for i in range(len(qpos)):
             self.all_joints[i].set_drive_target(self.qpos_target[i])
