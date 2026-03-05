@@ -1,9 +1,7 @@
 {
-    "name": "leap_hand",
+    "name": "leap_right", 
     "urdf_path": "./assets/leap_hand/robot.urdf",
-
     "base_link": "base_link",
-
     "joint_order": [
         "0", "1", "2", "3",
         "4", "5", "6", "7",
@@ -11,36 +9,37 @@
         "12", "13", "14", "15"
     ],
 
+
     "fingertip_link": [
         {
-            "name": "index",
-            "link": "fingertip",
-            "joint": ["1", "0", "2", "3"],
+            "name": "index",        
+            "link": "fingertip", 
+            "joint": ["1", "0", "2", "3"],  
             "center_offset": [0.0, 0.005, 0.0],
-            "human_hand_id": 8
+            "human_hand_id": 8                  
         },
 
         {
             "name": "middle",
             "link": "fingertip_2",
             "joint": ["5", "4", "6", "7"],
-            "center_offset": [0.0, 0.005, 0.0],
+            "center_offset": [0, 0.005, 0],
             "human_hand_id": 12
-        },
-
+        }, 
+        
         {
             "name": "ring",
             "link": "fingertip_3",
             "joint": ["9", "8", "10", "11"],
-            "center_offset": [0.0, 0.005, 0.0],
+            "center_offset": [0, 0.005, 0],
             "human_hand_id": 16
-        },
-
+        }, 
+        
         {
             "name": "thumb",
-            "link": "thumb_fingertip",
+             "link": "thumb_fingertip",
             "joint": ["12", "13", "14", "15"],
-            "center_offset": [0.0, 0.005, 0.0],
+            "center_offset": [0, 0.005, 0],
             "human_hand_id": 4
         }
     ]
