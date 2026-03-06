@@ -80,9 +80,9 @@ ClientReturnCode ManusZMQ::InitializeSDK()
 
     CoordinateSystemVUH t_VUH;
     CoordinateSystemVUH_Init(&t_VUH);
-    t_VUH.handedness = Side::Side_Right;
-    t_VUH.up         = AxisPolarity::AxisPolarity_PositiveZ;
-    t_VUH.view       = AxisView::AxisView_XFromViewer;
+    t_VUH.handedness = Side::Side_Left;
+    t_VUH.up         = AxisPolarity::AxisPolarity_PositiveY;
+    t_VUH.view       = AxisView::AxisView_ZFromViewer;
     t_VUH.unitScale  = 1.0f;
 
     if (CoreSdk_InitializeCoordinateSystemWithVUH(t_VUH, true) != SDKReturnCode::SDKReturnCode_Success)
@@ -121,7 +121,7 @@ void ManusZMQ::Run()
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
 
-    CoreSdk_SetRawSkeletonHandMotion(HandMotion_Auto);
+    CoreSdk_SetRawSkeletonHandMotion(HandMotion_None);
     ClientLog::print("Connected. Publishing on tcp://*:8000. Press space to exit.");
 
     while (m_Running)

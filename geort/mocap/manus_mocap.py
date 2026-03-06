@@ -17,13 +17,18 @@ def parse_full_skeleton(data, right_glove_sn=RIGHT_GLOVE_SN, left_glove_sn=LEFT_
         print("Left glove data found. Right glove data expected.")
     elif data[0] == right_glove_sn:
         data = np.array(list(map(float, data[1:]))).reshape(-1, 7)
+        # Transform from Manus glove coords to canonical hand coords.
+        # Manus: palm-to-middle=+z, palm-to-thumb=-x, hand mirrored
+        # Canonical: palm-to-middle=+z, palm-to-thumb=+y
+        # Steps: rotate +90° around Z, then flip Y → new = [-y_old, -x_old, z_old]
         T = np.array([
-            [0,  -1, 0],
-            [-1, 0, 0],
-            [0,  0, 1]
+            [ 0, -1, 0],
+            [-1,  0, 0],
+            [ 0,  0, 1]
         ])
         points_transformed = data[:, :3] @ T.T
-        return points_transformed
+        keep = [i for i in range(len(points_transformed)) if i not in (5, 10, 15, 20)]
+        return points_transformed[keep]
     else:
         print("Serial Number not found: " + str(data[0]))
 
@@ -59,7 +64,7 @@ class ManusMocap:
                     arr = parse_full_skeleton(data, self._right_glove_sn, self._left_glove_sn)
                     if arr is None:
                         continue
-                    assert arr.shape == (25, 3)
+                    assert arr.shape == (21, 3)
                     # arr = np.frombuffer(msg, dtype=np.float32).reshape(21, 3)
                     with self._lock:
                         self._latest_data = arr
